@@ -34,7 +34,43 @@ axios({
         grant_type: 'client_credentials'
     }
 }).then(response=>{
-    console.log(response.data)
+    const accessToken = response.data?.access_token;
+
+    const reqGN = axios.create({
+        baseURL: process.env.GN_ENDPOINT,
+        httpsAgent: agent,
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
+
+    const dataCob = {
+        calendario: {
+            expiracao: 3600
+        },
+        devedor: {
+            cpf: "12345678909",
+                nome: "Maison Fabiano"
+        },
+        valor: {
+            original: "100.00"
+        },
+        chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+        solicitacaoPagador: "Informe o número ou identificador do pedido."
+    }
+
+    const config = {
+        httpsAgent: agent,
+        headers: {
+            Authorization: `bearer ${accessToken}`,
+            'Content-Type': "application/json"
+        }
+    }
+
+    reqGN.post('v2/cob', dataCob).then(res=>console.log(res.data))
 })
 
 
