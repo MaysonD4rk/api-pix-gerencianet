@@ -23,14 +23,14 @@ const app = express()
 app.set('view engine', 'ejs');
 app.set('views', 'src/views')
 
-app.get('/', (req, res)=>{
+app.get('/', async (req, res)=>{
 
     const agent = new https.Agent({
         pfx: cert,
         passphrase: ""
     })
     
-    axios({
+    const authResponse = await axios({
         method: 'POST',
         url: `${process.env.GN_ENDPOINT}/oauth/token`,
         headers:{
@@ -41,45 +41,52 @@ app.get('/', (req, res)=>{
         data:{
             grant_type: 'client_credentials'
         }
-    }).then(response=>{
-        const accessToken = response.data?.access_token;
-    
-        const reqGN = axios.create({
-            baseURL: process.env.GN_ENDPOINT,
-            httpsAgent: agent,
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            }
-        });
-    
-        const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
-    
-        const dataCob = {
-            calendario: {
-                expiracao: 3600
-            },
-            devedor: {
-                cpf: "12345678909",
-                    nome: "Maison Fabiano"
-            },
-            valor: {
-                original: "100.00"
-            },
-            chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
-            solicitacaoPagador: "Informe o número ou identificador do pedido."
-        }
-    
-        const config = {
-            httpsAgent: agent,
-            headers: {
-                Authorization: `bearer ${accessToken}`,
-                'Content-Type': "application/json"
-            }
-        }
-    
-        reqGN.post('v2/cob', dataCob).then(response=>res.send(response.data))
     })
+    
+    const accessToken = authResponse.data?.access_token;
+
+    const reqGN = axios.create({
+        baseURL: process.env.GN_ENDPOINT,
+        httpsAgent: agent,
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
+
+    const dataCob = {
+        calendario: {
+            expiracao: 3600
+        },
+        devedor: {
+            cpf: "12345678909",
+                nome: "Maison Fabiano"
+        },
+        valor: {
+            original: "100.00"
+        },
+        chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+        solicitacaoPagador: "Informe o número ou identificador do pedido."
+    }
+
+    const config = {
+        httpsAgent: agent,
+        headers: {
+            Authorization: `bearer ${accessToken}`,
+            'Content-Type': "application/json"
+        }
+    }
+
+    const cobResponse = await reqGN.post('v2/cob', dataCob)
+
+    const qrcodeResponse = await reqGN.get(`v2/loc/${cobResponse.data.loc.id}/qrcode`)
+
+    res.render('qrcode',{
+        imagem: qrcodeResponse.data.imagemQrcode
+    })
+    
 })
 
 
