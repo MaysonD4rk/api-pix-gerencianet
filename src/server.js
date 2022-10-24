@@ -6,7 +6,8 @@ if (process.env.NODE_ENV !== 'production') {
 const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
-const https = require('https')
+const https = require('https');
+const express = require('express')
 
 
 const cert = fs.readFileSync(
@@ -17,69 +18,75 @@ const credentials = Buffer.from(
     `${process.env.GN_CLIENT_ID}:${process.env.GN_CLIENT_SECRET}`
 ).toString('base64')
 
-const agent = new https.Agent({
-    pfx: cert,
-    passphrase: ""
-})
+const app = express()
 
-axios({
-    method: 'POST',
-    url: `${process.env.GN_ENDPOINT}/oauth/token`,
-    headers:{
-        Authorization: `Basic ${credentials}`,
-        'Content-Type': 'application/json'
-    },
-    httpsAgent: agent,
-    data:{
-        grant_type: 'client_credentials'
-    }
-}).then(response=>{
-    const accessToken = response.data?.access_token;
+app.set('view engine', 'ejs');
+app.set('views', 'src/views')
 
-    const reqGN = axios.create({
-        baseURL: process.env.GN_ENDPOINT,
-        httpsAgent: agent,
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
+app.get('/', (req, res)=>{
+
+    const agent = new https.Agent({
+        pfx: cert,
+        passphrase: ""
+    })
+    
+    axios({
+        method: 'POST',
+        url: `${process.env.GN_ENDPOINT}/oauth/token`,
+        headers:{
+            Authorization: `Basic ${credentials}`,
             'Content-Type': 'application/json'
-        }
-    });
-
-    const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
-
-    const dataCob = {
-        calendario: {
-            expiracao: 3600
         },
-        devedor: {
-            cpf: "12345678909",
-                nome: "Maison Fabiano"
-        },
-        valor: {
-            original: "100.00"
-        },
-        chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
-        solicitacaoPagador: "Informe o número ou identificador do pedido."
-    }
-
-    const config = {
         httpsAgent: agent,
-        headers: {
-            Authorization: `bearer ${accessToken}`,
-            'Content-Type': "application/json"
+        data:{
+            grant_type: 'client_credentials'
         }
-    }
-
-    reqGN.post('v2/cob', dataCob).then(res=>console.log(res.data))
+    }).then(response=>{
+        const accessToken = response.data?.access_token;
+    
+        const reqGN = axios.create({
+            baseURL: process.env.GN_ENDPOINT,
+            httpsAgent: agent,
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    
+        const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
+    
+        const dataCob = {
+            calendario: {
+                expiracao: 3600
+            },
+            devedor: {
+                cpf: "12345678909",
+                    nome: "Maison Fabiano"
+            },
+            valor: {
+                original: "100.00"
+            },
+            chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+            solicitacaoPagador: "Informe o número ou identificador do pedido."
+        }
+    
+        const config = {
+            httpsAgent: agent,
+            headers: {
+                Authorization: `bearer ${accessToken}`,
+                'Content-Type': "application/json"
+            }
+        }
+    
+        reqGN.post('v2/cob', dataCob).then(response=>res.send(response.data))
+    })
 })
 
 
 
-console.log(cert)
-
-console.log(process.env.GN_CLIENT_ID)
-
-
+app.listen(8000, ()=>{
+    console.log('running')
+})
 
 
 /*
