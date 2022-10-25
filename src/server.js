@@ -13,11 +13,17 @@ const app = express()
 app.set('view engine', 'ejs');
 app.set('views', 'src/views')
 
+const reqGNAlready = GNRequest({
+    clientId: process.env.GN_CLIENT_ID,
+    clientSecret: process.env.GN_CLIENT_SECRET,
+});
+
+
 app.get('/', async (req, res)=>{
-    
     const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
     
-    const reqGN = await GNRequest();
+    const reqGN = await reqGNAlready;
+    
     const dataCob = {
         calendario: {
             expiracao: 3600
@@ -42,6 +48,15 @@ app.get('/', async (req, res)=>{
         imagem: qrcodeResponse.data.imagemQrcode
     })
     
+})
+
+app.get('/cobrancas', async (req, res)=>{
+    const reqGN = await reqGNAlready;
+
+    const cobResponse = await reqGN.get('/v2/cob?inicio=2022-10-25T16:01:35Z&fim=2022-11-30T20:10:00Z')
+
+    res.send(cobResponse.data)
+
 })
 
 
