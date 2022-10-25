@@ -2,21 +2,11 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
 }
 
-
-const axios = require('axios')
-const fs = require('fs')
-const path = require('path')
-const https = require('https');
 const express = require('express')
+const GNRequest = require('./apis/gerencianet.js')
 
 
-const cert = fs.readFileSync(
-    path.resolve(__dirname, `../certs/${process.env.GN_CERT}`)
-)
 
-const credentials = Buffer.from(
-    `${process.env.GN_CLIENT_ID}:${process.env.GN_CLIENT_SECRET}`
-).toString('base64')
 
 const app = express()
 
@@ -24,38 +14,10 @@ app.set('view engine', 'ejs');
 app.set('views', 'src/views')
 
 app.get('/', async (req, res)=>{
-
-    const agent = new https.Agent({
-        pfx: cert,
-        passphrase: ""
-    })
     
-    const authResponse = await axios({
-        method: 'POST',
-        url: `${process.env.GN_ENDPOINT}/oauth/token`,
-        headers:{
-            Authorization: `Basic ${credentials}`,
-            'Content-Type': 'application/json'
-        },
-        httpsAgent: agent,
-        data:{
-            grant_type: 'client_credentials'
-        }
-    })
-    
-    const accessToken = authResponse.data?.access_token;
-
-    const reqGN = axios.create({
-        baseURL: process.env.GN_ENDPOINT,
-        httpsAgent: agent,
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
     const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
-
+    
+    const reqGN = await GNRequest();
     const dataCob = {
         calendario: {
             expiracao: 3600
@@ -71,13 +33,6 @@ app.get('/', async (req, res)=>{
         solicitacaoPagador: "Informe o número ou identificador do pedido."
     }
 
-    const config = {
-        httpsAgent: agent,
-        headers: {
-            Authorization: `bearer ${accessToken}`,
-            'Content-Type': "application/json"
-        }
-    }
 
     const cobResponse = await reqGN.post('v2/cob', dataCob)
 
