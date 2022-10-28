@@ -66,9 +66,10 @@ app.get('/cobrancas', async (req, res)=>{
 app.post('/webhook(/pix)?', (req, res)=>{
     console.log(req.body)
 
-    const apiObj = {...(!!req.body.pix)?req.body.pix:req.body};
+    const id = 1;
 
-    apiObj.idPlayer = 1;
+    const apiObj = {...(!!req.body.pix)?req.body.pix:req.body, id};
+
     console.log(apiObj);
 
 
