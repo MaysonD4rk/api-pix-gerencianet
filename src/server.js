@@ -28,7 +28,7 @@ app.get('/', async (req, res)=>{
     
     const dataCob = {
         calendario: {
-            expiracao: 3600
+            expiracao: 30
         },
         devedor: {
             cpf: "12345678909",
@@ -57,8 +57,6 @@ app.get('/cobrancas', async (req, res)=>{
     const reqGN = await reqGNAlready;
 
     const cobResponse = await reqGN.get('/v2/cob?inicio=2022-10-25T16:01:35Z&fim=2022-11-30T20:10:00Z')
-
-    console.log(cobResponse.data)
 
     res.send(cobResponse.data)
 
