@@ -47,7 +47,8 @@ app.get('/', async (req, res)=>{
     const qrcodeResponse = await reqGN.get(`v2/loc/${cobResponse.data.loc.id}/qrcode`)
 
     res.render('qrcode',{
-        imagem: qrcodeResponse.data.imagemQrcode
+        imagem: qrcodeResponse.data.imagemQrcode,
+        qrCodeTxt: qrcodeResponse.data.qrcode
     })
     
 })
