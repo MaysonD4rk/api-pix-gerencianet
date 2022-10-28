@@ -68,7 +68,9 @@ app.post('/webhook(/pix)?', (req, res)=>{
 
     const id = 1;
 
-    const apiObj = {...(!!req.body.pix)?req.body.pix:req.body, id};
+    const pixInfo = req.body.pix?req.body.pix:{}
+
+    const apiObj = {...pixInfo, id};
 
     console.log(apiObj);
 
