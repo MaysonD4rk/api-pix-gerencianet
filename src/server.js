@@ -58,6 +58,8 @@ app.get('/cobrancas', async (req, res)=>{
 
     const cobResponse = await reqGN.get('/v2/cob?inicio=2022-10-25T16:01:35Z&fim=2022-11-30T20:10:00Z')
 
+    console.log(cobResponse.data)
+
     res.send(cobResponse.data)
 
 })
@@ -93,3 +95,6 @@ curl --request POST \
 }'
 
 */
+
+
+
