@@ -35,7 +35,7 @@ app.get('/', async (req, res)=>{
                 nome: "Maison Fabiano"
         },
         valor: {
-            original: "0.50"
+            original: "0.01"
         },
         chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
         solicitacaoPagador: "Informe o número ou identificador do pedido."
