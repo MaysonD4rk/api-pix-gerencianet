@@ -64,11 +64,9 @@ app.get('/cobrancas', async (req, res)=>{
 
 
 app.post('/webhook(/pix)?', (req, res)=>{
+    
     console.log(req.body)
-
-    console.log(req.body);
-
-
+    
     res.send('200')
 })
 
