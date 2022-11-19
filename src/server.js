@@ -4,7 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express')
 const GNRequest = require('./apis/gerencianet.js')
-const knex = require('../database/connection');
+//const knex = require('../database/connection');
 
 
 
@@ -25,8 +25,8 @@ const reqGNAlready = GNRequest({
 
 app.get('/:userId', async (req, res)=>{
 
-    const users = await knex.select('*').where({id: req.params.userId}).table('users');
-    console.log(users);
+    //const users = await knex.select('*').where({id: req.params.userId}).table('users');
+    //console.log(users);
     const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
     
     const reqGN = await reqGNAlready;
@@ -65,7 +65,7 @@ app.get('/:userId', async (req, res)=>{
                     valor: { original: cobResponse.data.valor.original },
                     chave: cobResponse.data.chave,
                     solicitacaoPagador: cobResponse.data.solicitacaoPagador,
-                    userId: req.params.userId
+                    //userId: req.params.userId
                 }
 
     console.log(saveDb)
