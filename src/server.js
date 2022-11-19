@@ -1,7 +1,9 @@
 
 if (process.env.NODE_ENV !== 'production') {
+    console.log('sa porra ta diferente')
     require('dotenv').config()
 }
+
 
 const express = require('express')
 const GNRequest = require('./apis/gerencianet.js')
