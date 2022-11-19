@@ -1,5 +1,6 @@
 
 console.log(process.env.NODE_ENV)
+console.log(process.env.GN_CLIENT_SECRET)
 if (process.env.NODE_ENV != 'production') {
     require('dotenv').config()
 }
