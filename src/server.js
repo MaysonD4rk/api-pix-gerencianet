@@ -1,6 +1,5 @@
 
 if (process.env.NODE_ENV !== 'production') {
-    console.log('sa porra ta diferente')
     require('dotenv').config()
 }
 
