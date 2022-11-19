@@ -4,7 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express')
 const GNRequest = require('./apis/gerencianet.js')
-
+const knex = require('../database/connection');
 
 
 
@@ -21,14 +21,19 @@ const reqGNAlready = GNRequest({
 });
 
 
+//conectar ao banco de dados, linkar a cobrança a ele
+
 app.get('/', async (req, res)=>{
+
+    const users = await knex.select('*').where().table('users');
+    console.log(users);
     const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
     
     const reqGN = await reqGNAlready;
     
     const dataCob = {
         calendario: {
-            expiracao: 30
+            expiracao: 3000
         },
         devedor: {
             cpf: "12345678909",
