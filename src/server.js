@@ -23,9 +23,9 @@ const reqGNAlready = GNRequest({
 
 //conectar ao banco de dados, linkar a cobrança a ele
 
-app.get('/', async (req, res)=>{
+app.get('/:userId', async (req, res)=>{
 
-    const users = await knex.select('*').where().table('users');
+    const users = await knex.select('*').where({id: req.params.userId}).table('users');
     console.log(users);
     const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
     
@@ -37,17 +37,38 @@ app.get('/', async (req, res)=>{
         },
         devedor: {
             cpf: "12345678909",
-                nome: "Maison Fabiano"
+            nome: "Mswareg"
         },
         valor: {
             original: "0.01"
         },
         chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
-        solicitacaoPagador: "Informe o número ou identificador do pedido."
+        solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro."
     }
 
 
     const cobResponse = await reqGN.post('v2/cob', dataCob)
+    
+    const saveDb = {
+                    calendario: { criacao: cobResponse.data.calendario.criacao, expiracao: cobResponse.data.calendario.expiracao },
+                    txid: cobResponse.data.txid,
+                    revisao: cobResponse.data.revisao,
+                    loc: {
+                        id: cobResponse.data.loc.id,
+                        location: cobResponse.data.loc.location,
+                        tipoCob: cobResponse.data.loc.tipoCob,
+                        criacao: cobResponse.data.loc.criacao
+                    },
+                    location: cobResponse.data.location,
+                    status: cobResponse.data.status,
+                    devedor: { cpf: cobResponse.data.devedor.cpf, nome: cobResponse.data.devedor.nome },
+                    valor: { original: cobResponse.data.valor.original },
+                    chave: cobResponse.data.chave,
+                    solicitacaoPagador: cobResponse.data.solicitacaoPagador,
+                    userId: req.params.userId
+                }
+
+    console.log(saveDb)
 
     const qrcodeResponse = await reqGN.get(`v2/loc/${cobResponse.data.loc.id}/qrcode`)
 
