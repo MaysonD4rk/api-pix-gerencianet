@@ -32,7 +32,7 @@ app.get('/charge/:userId', async (req, res)=>{
     let valueToPay = req.query.value;
     if (valueToPay != undefined) {
         if (valueToPay>=1) {
-                valueToPay = req.query.value;
+            valueToPay = req.query.value + (req.query.value/100*2.5);
         }else{
             valueToPay = 1
         }
@@ -362,7 +362,7 @@ app.post('/webhook(/pix)?', async (req, res)=>{
         const userId = await knex.select('userId').where({ chargeId: req.body.pix[0].txid }).table('charge')
         const userCredits = await knex.select('credits').where({ userId: userId[0].userId }).table('userinfo');
         console.log(userCredits);
-        await knex.update({ credits: parseInt(req.body.pix[0].valor + userCredits[0].credits ) }).where({ userId: userId[0].userId }).table('userinfo');
+        await knex.update({ credits: parseInt((req.body.pix[0].valor - (req.body.pix[0].valor/100*2.5)) + userCredits[0].credits ) }).where({ userId: userId[0].userId }).table('userinfo');
 
         res.send('200')
     } catch (error) {
