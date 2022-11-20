@@ -32,7 +32,7 @@ app.get('/charge/:userId', async (req, res)=>{
     let valueToPay = req.query.value;
     if (valueToPay != undefined) {
         if (valueToPay>=1) {
-            valueToPay = parseFloat(req.query.value + (req.query.value/100*2.5));
+            valueToPay = (parseFloat(req.query.value) + (req.query.value/100*2.5));
             if (valueToPay.toString().indexOf('.') == -1) {
                 valueToPay += '.00'
             }
