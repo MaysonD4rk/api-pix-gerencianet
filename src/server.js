@@ -140,6 +140,7 @@ app.get('/charge/:userId', async (req, res)=>{
             }
 
         } catch (error) {
+            console.log('o erro esta aqui')
             console.log(error)
         }
         
