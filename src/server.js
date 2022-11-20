@@ -3,7 +3,7 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
 }
 
-
+const cors = require('cors')
 const express = require('express')
 const GNRequest = require('./apis/gerencianet.js')
 const knex = require('../database/connection');
@@ -11,7 +11,7 @@ const knex = require('../database/connection');
 
 
 const app = express()
-
+app.use(cors())
 app.use(express.json())
 
 app.set('view engine', 'ejs');
@@ -29,19 +29,25 @@ app.get('/', (req, res)=>{
 })
 
 app.get('/charge/:userId', async (req, res)=>{
+    let valueToPay = req.query.value;
+    if (valueToPay != undefined) {
+        if (valueToPay>=1) {
+                valueToPay = req.query.value;
+        }else{
+            valueToPay = 1
+        }
+    }else{
+        valueToPay = 1
+    }
 
     try {
         const users = await knex.select('*').where({id: req.params.userId}).table('users');
-        const valueToPay = req.query.value != undefined || req.query.value.toString().indexOf('.') != -1 || req.query.value<1  ? req.query.value : 1.00
-
+        
 
     console.log(users)
 
     if(users.length<1){
-        res.render('qrcode', {
-            imagem: 'l',
-            qrCodeTxt: 'l'
-        })
+        res.send('usuário não encontrado')
     }else{
         
         try {
@@ -61,7 +67,7 @@ app.get('/charge/:userId', async (req, res)=>{
                         nome: "Mswareg"
                     },
                     valor: {
-                        original: `${valueToPay}`
+                        original: `${valueToPay}.00`
                     },
                     chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
                     solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro."
@@ -102,11 +108,12 @@ app.get('/charge/:userId', async (req, res)=>{
                     } catch (error) {
                         console.log(error)
                     }
-
-                res.render('qrcode', {
+                res.status(200)
+                res.json({
                     imagem: qrcodeResponse.data.imagemQrcode,
                     qrCodeTxt: qrcodeResponse.data.qrcode
                 })
+                
             }else{
 
                 for (let i = 0; i < chargeDatas.length; i++) {
@@ -114,11 +121,13 @@ app.get('/charge/:userId', async (req, res)=>{
                     const date2 = new Date();
     
                     if ((date2.getTime() - date1.getTime()) / 1000 < 3000 && chargeDatas[i].status != "pago") {
-                        res.render('qrcode',{
+                        res.status(200)
+                        res.json({
                             imagem: chargeDatas[i].chargeJson.qrcode,
                             qrCodeTxt: chargeDatas[i].chargeJson.qrcodetxt,
                             old: true
                         })
+
                         break;
                     }else{
                         if (chargeDatas[i].status == "pago") {
@@ -176,11 +185,11 @@ app.get('/charge/:userId', async (req, res)=>{
                             } catch (error) {
                                 console.log(error)
                             }
-
-                            res.render('qrcode', {
+                            res.status(200)
+                            res.json({
                                 imagem: qrcodeResponse.data.imagemQrcode,
                                 qrCodeTxt: qrcodeResponse.data.qrcode
-                            })
+                                })
                         }else{
                             try {
                                 var deleteCob = await knex.delete().where({ chargeId: chargeDatas[i].chargeId }).table('charge')
@@ -198,14 +207,14 @@ app.get('/charge/:userId', async (req, res)=>{
             }
 
         } catch (error) {
-            console.log('o erro esta aqui')
+            console.log('o erro esta aqui 2')
             console.log(error)
         }
         
         
     }
     } catch (error) {
-        console.log('o erro entrou aqui')
+        console.log('o erro entrou aqui 1')
         console.log(error)
     }
 
