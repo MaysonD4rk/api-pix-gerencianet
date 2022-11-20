@@ -165,16 +165,22 @@ app.get('/cobrancas', async (req, res)=>{
 })
 
 
-app.post('/webhook(/pix)?', (req, res)=>{
+app.post('/webhook(/pix)?', async (req, res)=>{
     
     console.log(req.body)
-
-    const pixObj = {...req.body.pix[0]}
     
-    console.log(pixObj)
 
+    try {
+        await knex.update({ chargeStatus: 'pago' }).where({ chargeId: req.body.pix[0].txid }).table('charge');
+        const userId = await knex.select('userId').where({ chargeId: req.body.pix[0].txid }).table('charge')
+        const userCredits = await knex.select('credits').where({ userId: userId[0].userId }).table('userinfo')
+        await knex.update({ credits: parseFloat(req.body.pix[0].valor + userCredits[0].credits ) }).where({ userId: userId[0].userId }).table('userinfo');
 
-    res.send('200')
+        res.send('200')
+    } catch (error) {
+        res.send('502')
+    }
+
 })
 
 
