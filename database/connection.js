@@ -1,10 +1,10 @@
 var knex = require('knex')({
     client: 'mysql2',
     connection: {
-        host: '127.0.0.1',
-        user: 'root',
-        password: '123456',
-        database: 'mswareg'
+        host: 'db-mswareg.c8krvoqz6fy6.sa-east-1.rds.amazonaws.com',
+        user: 'mswaregmasterdb',
+        password: 'cF0ZFgZBpfL6ClUsmJ2J',
+        database: 'mswareg_dev'
     }
 })
 
