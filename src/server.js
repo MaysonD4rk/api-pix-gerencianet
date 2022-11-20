@@ -33,9 +33,24 @@ app.get('/charge/:userId', async (req, res)=>{
     if (valueToPay != undefined) {
         if (valueToPay>=1) {
             valueToPay = (parseFloat(req.query.value) + (req.query.value/100*2.5));
+            
             if (valueToPay.toString().indexOf('.') == -1) {
-                valueToPay += '.00'
+                valueToPay =+ '.00'
             }
+            console.log(valueToPay)
+
+            let dotValue = valueToPay.toString().indexOf('.');
+            console.log(dotValue)
+            let valueAfterDot = valueToPay.toString().slice((dotValue+1), ((dotValue+1) + 2))
+            console.log(valueAfterDot)
+            if (valueAfterDot.length<2) {
+                valueAfterDot += '0'
+            }
+            let valueBeforeDot = valueToPay.toString().slice(0,dotValue)
+            console.log(valueBeforeDot)
+
+            valueToPay = `${valueBeforeDot}.${valueAfterDot}`
+            console.log(valueToPay)
         }else{
             valueToPay = 1
         }
@@ -140,7 +155,7 @@ app.get('/charge/:userId', async (req, res)=>{
                                     nome: "Mswareg"
                                 },
                                 valor: {
-                                    original: `${valueToPay}.00`
+                                    original: `${valueToPay}`
                                 },
                                 chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
                                 solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro."
