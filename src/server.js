@@ -32,7 +32,7 @@ app.get('/charge/:userId', async (req, res)=>{
     let valueToPay = req.query.value;
     if (valueToPay != undefined) {
         if (valueToPay>=1) {
-            valueToPay = parseFloor(req.query.value + (req.query.value/100*2.5));
+            valueToPay = Math.floor(req.query.value + (req.query.value/100*2.5));
         }else{
             valueToPay = 1
         }
