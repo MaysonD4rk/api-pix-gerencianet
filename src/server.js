@@ -30,8 +30,9 @@ app.get('/', (req, res)=>{
 
 app.get('/charge/:userId', async (req, res)=>{
 
-    const users = await knex.select('*').where({id: req.params.userId}).table('users');
-    const valueToPay = req.query.value != undefined || req.query.value.toString().indexOf('.') != -1 ? req.query.value : 1.00
+    try {
+        const users = await knex.select('*').where({id: req.params.userId}).table('users');
+        const valueToPay = req.query.value != undefined || req.query.value.toString().indexOf('.') != -1 ? req.query.value : 1.00
 
 
     console.log(users)
@@ -45,7 +46,6 @@ app.get('/charge/:userId', async (req, res)=>{
         
         try {
             const chargeDatas = await knex.select('*').where({ userId: req.params.userId, chargeValue: valueToPay }).table("charge")
-            
             
             if (chargeDatas.length<1) {
                 const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
@@ -145,6 +145,10 @@ app.get('/charge/:userId', async (req, res)=>{
         }
         
         
+    }
+    } catch (error) {
+        console.log('o erro entrou aqui')
+        console.log(error)
     }
 
     
