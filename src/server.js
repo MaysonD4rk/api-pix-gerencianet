@@ -32,7 +32,7 @@ app.get('/charge/:userId', async (req, res)=>{
     let valueToPay = req.query.value;
     if (valueToPay != undefined) {
         if (valueToPay>=1) {
-            valueToPay = (req.query.value + (req.query.value/100*2.5));
+            valueToPay = parseFloor(req.query.value + (req.query.value/100*2.5));
         }else{
             valueToPay = 1
         }
@@ -67,7 +67,7 @@ app.get('/charge/:userId', async (req, res)=>{
                         nome: "Mswareg"
                     },
                     valor: {
-                        original: `'${valueToPay}.00'`
+                        original: `${valueToPay}.00`
                     },
                     chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
                     solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro."
