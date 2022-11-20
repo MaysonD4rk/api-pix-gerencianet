@@ -379,8 +379,8 @@ app.post('/webhook(/pix)?', async (req, res)=>{
         await knex.update({ chargeStatus: 'pago' }).where({ chargeId: req.body.pix[0].txid }).table('charge');
         const userId = await knex.select('userId').where({ chargeId: req.body.pix[0].txid }).table('charge')
         const userCredits = await knex.select('credits').where({ userId: userId[0].userId }).table('userinfo');
-        console.log(userCredits);
-        await knex.update({ credits: parseInt((req.body.pix[0].valor - (req.body.pix[0].valor/100*2.5)) + userCredits[0].credits ) }).where({ userId: userId[0].userId }).table('userinfo');
+        console.log(parseFloat(userCredits[0].credits) + parseFloat(req.body.pix[0].valor - (req.body.pix[0].valor / 100 * 2.5)));
+        await knex.update({ credits: parseFloat(userCredits[0].credits) + parseFloat(req.body.pix[0].valor - (req.body.pix[0].valor / 100 * 2.5))  }).where({ userId: userId[0].userId }).table('userinfo');
 
         res.send('200')
     } catch (error) {
