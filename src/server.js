@@ -23,6 +23,13 @@ const reqGNAlready = GNRequest({
 });
 
 
+function returnInitialCapital(value) {
+    value1 = (100 * value);
+    value2 = value1 / 102.5;
+    return Math.floor(value2 + 0.001);
+}
+
+
 //conectar ao banco de dados, linkar a cobrança a ele
 app.get('/', (req, res)=>{
     res.redirect('http://mswareg.mswareg.com:8080')
@@ -379,8 +386,9 @@ app.post('/webhook(/pix)?', async (req, res)=>{
         await knex.update({ chargeStatus: 'pago' }).where({ chargeId: req.body.pix[0].txid }).table('charge');
         const userId = await knex.select('userId').where({ chargeId: req.body.pix[0].txid }).table('charge')
         const userCredits = await knex.select('credits').where({ userId: userId[0].userId }).table('userinfo');
-        console.log(parseFloat(userCredits[0].credits) + parseFloat(req.body.pix[0].valor - (req.body.pix[0].valor / 100 * 2.5)));
-        await knex.update({ credits: parseFloat(userCredits[0].credits) + parseFloat(req.body.pix[0].valor - (req.body.pix[0].valor / 100 * 2.5))  }).where({ userId: userId[0].userId }).table('userinfo');
+        parseFloat(userCredits[0].credits)
+        
+        await knex.update({ credits: `${parseFloat(parseFloat(userCredits[0].credits) + returnInitialCapital(parseFloat(req.body.pix[0].valor)))}` }).where({ userId: userId[0].userId }).table('userinfo');
 
         res.send('200')
     } catch (error) {
