@@ -23,10 +23,9 @@ const reqGNAlready = GNRequest({
 });
 
 
-function returnInitialCapital(value) {
-    value1 = (100 * value);
-    value2 = value1 / 102.5;
-    return Math.floor(value2 + 0.001);
+function returnInitialCapital(value){
+    var mult = ((value*100)/102.5+0.001)>=1?0.001:0.01
+    return Math.floor((value*100)/102.5+mult)
 }
 
 
