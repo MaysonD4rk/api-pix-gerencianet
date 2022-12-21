@@ -31,7 +31,7 @@ function returnInitialCapital(value){
 
 //conectar ao banco de dados, linkar a cobrança a ele
 app.get('/', (req, res)=>{
-    res.redirect('http://mswareg.mswareg.com:8080')
+    res.redirect('https://mswareg.mswareg.com')
 })
 
 app.get('/charge/:userId', async (req, res)=>{
@@ -194,7 +194,7 @@ app.get('/charge/:userId', async (req, res)=>{
                         "userId": ${req.params.userId},
                         "qrcode": "${qrcodeResponse.data.imagemQrcode}",
                         "qrcodetxt": "${qrcodeResponse.data.qrcode}"
-                    }`
+                        }`
 
                             try {
                                 const insertCharge = await knex.insert({ userId: req.params.userId, chargeId: cobResponse.data.txid, chargeValue: cobResponse.data.valor.original, chargeStatus: cobResponse.data.status, chargeJson: saveDb }).table("charge")
@@ -203,13 +203,13 @@ app.get('/charge/:userId', async (req, res)=>{
                                 console.log(error)
                             }
                             
-                            res.json({
-                                imagem: qrcodeResponse.data.imagemQrcode,
-                                qrCodeTxt: qrcodeResponse.data.qrcode
-                            })
-                        } catch (error) {
-                            console.log(error)
-                        }
+                                res.json({
+                                    imagem: qrcodeResponse.data.imagemQrcode,
+                                    qrCodeTxt: qrcodeResponse.data.qrcode
+                                })
+                            } catch (error) {
+                                console.log(error)
+                            }
                         res.status(200)
 
                         break;
@@ -364,6 +364,43 @@ app.get('/charge/:userId', async (req, res)=>{
 
     
 })
+
+app.get('/donate', async (req, res) => {
+    const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
+
+    const reqGN = await reqGNAlready;
+
+    const dataCob = {
+        calendario: {
+            expiracao: 3000
+        },
+        devedor: {
+            cpf: "12345678909",
+            nome: "Mswareg"
+        },
+        valor: {
+            original: `10.00`
+        },
+        chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+        solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro."
+    }
+
+
+    const cobResponse = await reqGN.post('v2/cob', dataCob)
+
+
+
+
+    const qrcodeResponse = await reqGN.get(`v2/loc/${cobResponse.data.loc.id}/qrcode`)
+
+    
+    res.status(200)
+    res.json({
+        imagem: qrcodeResponse.data.imagemQrcode,
+        qrCodeTxt: qrcodeResponse.data.qrcode
+    })
+})
+
 
 app.get('/cobrancas', async (req, res)=>{
     const reqGN = await reqGNAlready;
