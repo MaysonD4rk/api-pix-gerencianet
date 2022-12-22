@@ -369,6 +369,7 @@ app.get('/donate', async (req, res) => {
     const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
 
     const reqGN = await reqGNAlready;
+    console.log(reqGN)
 
     const dataCob = {
         calendario: {
