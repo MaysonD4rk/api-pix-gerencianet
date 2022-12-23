@@ -17,11 +17,19 @@ app.use(express.json())
 app.set('view engine', 'ejs');
 app.set('views', 'src/views')
 
-const reqGNAlready = GNRequest({
+let reqGNAlready = GNRequest({
     clientId: process.env.GN_CLIENT_ID,
     clientSecret: process.env.GN_CLIENT_SECRET,
 });
 
+setInterval(() => {
+    reqGNAlready = GNRequest({
+        clientId: process.env.GN_CLIENT_ID,
+        clientSecret: process.env.GN_CLIENT_SECRET,
+    });
+}, 3599999);
+
+//3600000
 
 function returnInitialCapital(value){
     var mult = ((value*100)/102.5+0.001)>=1?0.001:0.01
