@@ -39,7 +39,7 @@ function returnInitialCapital(value){
 
 //conectar ao banco de dados, linkar a cobrança a ele
 app.get('/', (req, res)=>{
-    res.redirect('https://mswareg.mswareg.com')
+    res.redirect('https://mswareg.mswareg.com/home')
 })
 
 app.get('/charge/:userId', async (req, res)=>{
@@ -443,7 +443,7 @@ app.post('/webhook(/pix)?', async (req, res)=>{
 })
 
 
-app.listen(8000, ()=>{
+app.listen(5353, ()=>{
     console.log('running')
 })
 
