@@ -443,7 +443,7 @@ app.post('/webhook(/pix)?', async (req, res)=>{
 })
 
 
-app.listen(5353, ()=>{
+app.listen(8000, ()=>{
     console.log('running')
 })
 
