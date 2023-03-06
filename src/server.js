@@ -44,6 +44,7 @@ app.get('/', (req, res)=>{
 
 app.get('/charge/:userId', async (req, res)=>{
     let valueToPay = req.query.value;
+    
     if (valueToPay != undefined) {
         if (valueToPay>=1) {
             valueToPay = (parseFloat(req.query.value) + (req.query.value/100*2.5));
@@ -422,17 +423,362 @@ app.get('/cobrancas', async (req, res)=>{
 })
 
 
-app.post('/webhook(/pix)?', async (req, res)=>{
-    
+
+
+
+
+app.get('/payBilling/:userId/:payerId', async (req, res) => {
+    let valueToPay = req.query.value;
+
+    if (valueToPay != undefined) {
+        if (valueToPay >= 1) {
+            valueToPay = (parseFloat(req.query.value) + (req.query.value / 100 * 2.5));
+
+            if (valueToPay.toString().indexOf('.') == -1) {
+                valueToPay = + '.00'
+            }
+            console.log(valueToPay)
+
+            let dotValue = valueToPay.toString().indexOf('.');
+            console.log(dotValue)
+            let valueAfterDot = valueToPay.toString().slice((dotValue + 1), ((dotValue + 1) + 2))
+            console.log(valueAfterDot)
+            if (valueAfterDot.length < 2) {
+                valueAfterDot += '0'
+            }
+            let valueBeforeDot = valueToPay.toString().slice(0, dotValue)
+            console.log(valueBeforeDot)
+
+            valueToPay = `${valueBeforeDot}.${valueAfterDot}`
+            console.log(valueToPay)
+        } else {
+            valueToPay = 1
+        }
+    } else {
+        valueToPay = 1
+    }
+
+    try {
+        const users = await knex.select('*').where({ id: req.params.payerId }).table('users');
+
+
+        console.log(users)
+
+        if (users.length < 1) {
+            res.send('usuário não encontrado')
+        } else {
+
+            try {
+                const chargeDatas = await knex.select('*').where({ payerId: req.params.payerId, chargeValue: valueToPay }).table("customerBilling")
+
+                if (chargeDatas.length < 1) {
+                    const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
+
+                    const reqGN = await reqGNAlready;
+
+                    const dataCob = {
+                        calendario: {
+                            expiracao: 3000
+                        },
+                        devedor: {
+                            cpf: "12345678909",
+                            nome: "Mswareg"
+                        },
+                        valor: {
+                            original: `${valueToPay}`
+                        },
+                        chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+                        solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
+                        webhookUrl: "https://pix.mswareg.com/webhookPaybilling"
+                    }
+
+
+                    const cobResponse = await reqGN.post('v2/cob', dataCob)
+
+
+
+
+                    const qrcodeResponse = await reqGN.get(`v2/loc/${cobResponse.data.loc.id}/qrcode`)
+
+                    const saveDb = `{
+                        "calendario": { "criacao": "${cobResponse.data.calendario.criacao}", "expiracao": ${cobResponse.data.calendario.expiracao} },
+                        "txid": "${cobResponse.data.txid}",
+                        "revisao": ${cobResponse.data.revisao},
+                        "loc": {
+                            "id": ${cobResponse.data.loc.id},
+                            "location": "${cobResponse.data.loc.location}",
+                            "tipoCob": "${cobResponse.data.loc.tipoCob}",
+                            "criacao": "${cobResponse.data.loc.criacao}"
+                        },
+                        "location": "${cobResponse.data.location}",
+                        "status": "${cobResponse.data.status}",
+                        "devedor": { "cpf": "${cobResponse.data.devedor.cpf}", "nome": "${cobResponse.data.devedor.nome}" },
+                        "valor": { "original": "${cobResponse.data.valor.original}" },
+                        "chave": "${cobResponse.data.chave}",
+                        "solicitacaoPagador": "${cobResponse.data.solicitacaoPagador}",
+                        "webhookUrl": "https://pix.mswareg.com/webhookPaybilling",
+                        "userId": ${req.params.userId},
+                        "qrcode": "${qrcodeResponse.data.imagemQrcode}",
+                        "qrcodetxt": "${qrcodeResponse.data.qrcode}"
+                    }`
+
+                    try {
+                        const insertCharge = await knex.insert({ userId: req.params.userId, payerId: req.params.payerId, chargeId: cobResponse.data.txid, chargeValue: cobResponse.data.valor.original, chargeStatus: cobResponse.data.status, chargeJson: saveDb }).table("customerBilling")
+                        console.log(insertCharge)
+                    } catch (error) {
+                        console.log(error)
+                    }
+                    res.status(200)
+                    res.json({
+                        imagem: qrcodeResponse.data.imagemQrcode,
+                        qrCodeTxt: qrcodeResponse.data.qrcode
+                    })
+
+                } else {
+
+                    for (let i = 0; i < chargeDatas.length; i++) {
+                        const date1 = new Date(chargeDatas[i].chargeJson.loc.criacao);
+                        const date2 = new Date();
+
+                        if ((date2.getTime() - date1.getTime()) / 1000 < 3000 && chargeDatas[i].status != "pago") {
+                            try {
+                                var deleteCob = await knex.delete().where({ chargeId: chargeDatas[i].chargeId }).table('charge');
+
+                                const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
+
+                                const reqGN = await reqGNAlready;
+
+                                const dataCob = {
+                                    calendario: {
+                                        expiracao: 3000
+                                    },
+                                    devedor: {
+                                        cpf: "12345678909",
+                                        nome: "Mswareg"
+                                    },
+                                    valor: {
+                                        original: `${valueToPay}`
+                                    },
+                                    chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+                                    solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
+                                    webhookUrl: "https://pix.mswareg.com/webhookPaybilling"
+                                }
+
+
+                                const cobResponse = await reqGN.post('v2/cob', dataCob)
+
+
+
+
+                                const qrcodeResponse = await reqGN.get(`v2/loc/${cobResponse.data.loc.id}/qrcode`)
+
+                                const saveDb = `{
+                        "calendario": { "criacao": "${cobResponse.data.calendario.criacao}", "expiracao": ${cobResponse.data.calendario.expiracao} },
+                        "txid": "${cobResponse.data.txid}",
+                        "revisao": ${cobResponse.data.revisao},
+                        "loc": {
+                            "id": ${cobResponse.data.loc.id},
+                            "location": "${cobResponse.data.loc.location}",
+                            "tipoCob": "${cobResponse.data.loc.tipoCob}",
+                            "criacao": "${cobResponse.data.loc.criacao}"
+                        },
+                        "location": "${cobResponse.data.location}",
+                        "status": "${cobResponse.data.status}",
+                        "devedor": { "cpf": "${cobResponse.data.devedor.cpf}", "nome": "${cobResponse.data.devedor.nome}" },
+                        "valor": { "original": "${cobResponse.data.valor.original}" },
+                        "chave": "${cobResponse.data.chave}",
+                        "solicitacaoPagador": "${cobResponse.data.solicitacaoPagador}",
+                        "webhookUrl": "https://pix.mswareg.com/webhookPaybilling",
+                        "userId": ${req.params.userId},
+                        "qrcode": "${qrcodeResponse.data.imagemQrcode}",
+                        "qrcodetxt": "${qrcodeResponse.data.qrcode}"
+                        }`
+
+                                try {
+                                    const insertCharge = await knex.insert({ userId: req.params.userId,payerId: req.params.payerId, chargeId: cobResponse.data.txid, chargeValue: cobResponse.data.valor.original, chargeStatus: cobResponse.data.status, chargeJson: saveDb }).table("customerBilling")
+                                    console.log(insertCharge)
+                                } catch (error) {
+                                    console.log(error)
+                                }
+
+                                res.json({
+                                    imagem: qrcodeResponse.data.imagemQrcode,
+                                    qrCodeTxt: qrcodeResponse.data.qrcode
+                                })
+                            } catch (error) {
+                                console.log(error)
+                            }
+                            res.status(200)
+
+                            break;
+                        } else {
+                            if (chargeDatas[i].status == "pago") {
+                                const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
+
+                                const reqGN = await reqGNAlready;
+
+                                const dataCob = {
+                                    calendario: {
+                                        expiracao: 3000
+                                    },
+                                    devedor: {
+                                        cpf: "12345678909",
+                                        nome: "Mswareg"
+                                    },
+                                    valor: {
+                                        original: `${valueToPay}`
+                                    },
+                                    chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+                                    solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
+                                    webhookUrl: "https://pix.mswareg.com/webhookPaybilling"
+                                }
+
+
+                                const cobResponse = await reqGN.post('v2/cob', dataCob)
+
+
+
+
+                                const qrcodeResponse = await reqGN.get(`v2/loc/${cobResponse.data.loc.id}/qrcode`)
+
+                                const saveDb = `{
+                        "calendario": { "criacao": "${cobResponse.data.calendario.criacao}", "expiracao": ${cobResponse.data.calendario.expiracao} },
+                        "txid": "${cobResponse.data.txid}",
+                        "revisao": ${cobResponse.data.revisao},
+                        "loc": {
+                            "id": ${cobResponse.data.loc.id},
+                            "location": "${cobResponse.data.loc.location}",
+                            "tipoCob": "${cobResponse.data.loc.tipoCob}",
+                            "criacao": "${cobResponse.data.loc.criacao}"
+                        },
+                        "location": "${cobResponse.data.location}",
+                        "status": "${cobResponse.data.status}",
+                        "devedor": { "cpf": "${cobResponse.data.devedor.cpf}", "nome": "${cobResponse.data.devedor.nome}" },
+                        "valor": { "original": "${cobResponse.data.valor.original}" },
+                        "chave": "${cobResponse.data.chave}",
+                        "solicitacaoPagador": "${cobResponse.data.solicitacaoPagador}",
+                        "webhookUrl": "https://pix.mswareg.com/webhookPaybilling"
+                        "userId": ${req.params.userId},
+                        "qrcode": "${qrcodeResponse.data.imagemQrcode}",
+                        "qrcodetxt": "${qrcodeResponse.data.qrcode}"
+                    }`
+
+                                try {
+                                    const insertCharge = await knex.insert({ userId: req.params.userId, payerId: req.params.payerId, chargeId: cobResponse.data.txid, chargeValue: cobResponse.data.valor.original, chargeStatus: cobResponse.data.status, chargeJson: saveDb }).table("customerBilling")
+                                    console.log(insertCharge)
+                                } catch (error) {
+                                    console.log(error)
+                                }
+                                res.status(200)
+                                res.json({
+                                    imagem: qrcodeResponse.data.imagemQrcode,
+                                    qrCodeTxt: qrcodeResponse.data.qrcode
+                                })
+                            } else {
+                                try {
+                                    var deleteCob = await knex.delete().where({ chargeId: chargeDatas[i].chargeId }).table('charge')
+                                    console.log(deleteCob);
+
+                                    const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
+
+                                    const reqGN = await reqGNAlready;
+
+                                    const dataCob = {
+                                        calendario: {
+                                            expiracao: 3000
+                                        },
+                                        devedor: {
+                                            cpf: "12345678909",
+                                            nome: "Mswareg"
+                                        },
+                                        valor: {
+                                            original: `${valueToPay}`
+                                        },
+                                        chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+                                        solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
+                                        webhookUrl: "https://pix.mswareg.com/webhookPaybilling"
+                                    }
+
+
+                                    const cobResponse = await reqGN.post('v2/cob', dataCob)
+
+
+
+
+                                    const qrcodeResponse = await reqGN.get(`v2/loc/${cobResponse.data.loc.id}/qrcode`)
+
+                                    const saveDb = `{
+                        "calendario": { "criacao": "${cobResponse.data.calendario.criacao}", "expiracao": ${cobResponse.data.calendario.expiracao} },
+                        "txid": "${cobResponse.data.txid}",
+                        "revisao": ${cobResponse.data.revisao},
+                        "loc": {
+                            "id": ${cobResponse.data.loc.id},
+                            "location": "${cobResponse.data.loc.location}",
+                            "tipoCob": "${cobResponse.data.loc.tipoCob}",
+                            "criacao": "${cobResponse.data.loc.criacao}"
+                        },
+                        "location": "${cobResponse.data.location}",
+                        "status": "${cobResponse.data.status}",
+                        "devedor": { "cpf": "${cobResponse.data.devedor.cpf}", "nome": "${cobResponse.data.devedor.nome}" },
+                        "valor": { "original": "${cobResponse.data.valor.original}" },
+                        "chave": "${cobResponse.data.chave}",
+                        "solicitacaoPagador": "${cobResponse.data.solicitacaoPagador}",
+                        "webhookUrl": "https://pix.mswareg.com/webhookPaybilling",
+                        "userId": ${req.params.userId},
+                        "qrcode": "${qrcodeResponse.data.imagemQrcode}",
+                        "qrcodetxt": "${qrcodeResponse.data.qrcode}"
+                    }`
+
+                                    try {
+                                        const insertCharge = await knex.insert({ userId: req.params.userId,payerId: req.params.payerId, chargeId: cobResponse.data.txid, chargeValue: cobResponse.data.valor.original, chargeStatus: cobResponse.data.status, chargeJson: saveDb }).table("customerBilling")
+                                        console.log(insertCharge)
+                                    } catch (error) {
+                                        console.log(error)
+                                    }
+                                    res.status(200)
+                                    res.json({
+                                        imagem: qrcodeResponse.data.imagemQrcode,
+                                        qrCodeTxt: qrcodeResponse.data.qrcode
+                                    })
+
+                                } catch (error) {
+                                    console.log(error)
+                                    res.send('deu erro');
+
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+            } catch (error) {
+                console.log('o erro esta aqui 2')
+                console.log(error)
+            }
+
+
+        }
+    } catch (error) {
+        console.log('o erro entrou aqui 1')
+        console.log(error)
+    }
+
+
+})
+
+
+app.post('/webhook(/pix)?', async (req, res) => {
+
     console.log(req.body)
-    
+
 
     try {
         await knex.update({ chargeStatus: 'pago' }).where({ chargeId: req.body.pix[0].txid }).table('charge');
         const userId = await knex.select('userId').where({ chargeId: req.body.pix[0].txid }).table('charge')
         const userCredits = await knex.select('credits').where({ userId: userId[0].userId }).table('userinfo');
         parseFloat(userCredits[0].credits)
-        
+
         await knex.update({ credits: `${parseFloat(parseFloat(userCredits[0].credits) + returnInitialCapital(parseFloat(req.body.pix[0].valor)))}` }).where({ userId: userId[0].userId }).table('userinfo');
 
         res.send('200')
@@ -443,7 +789,40 @@ app.post('/webhook(/pix)?', async (req, res)=>{
 })
 
 
-app.listen(8000, ()=>{
+app.post('/webhookPaybilling(/pix)?', async (req, res)=>{
+    console.log(req.body)
+
+
+    try {
+
+        
+        await knex.update({ chargeStatus: 'pago' }).where({ chargeId: req.body.pix[0].txid }).table('customerBilling');
+        const users = await knex.select(['userId', 'payerId']).where({ chargeId: req.body.pix[0].txid }).table('customerBilling')
+        const userCredits = await knex.select('credits').where({ userId: users[0].userId }).table('userinfo');
+        parseFloat(userCredits[0].credits)
+
+        const payerToken = await knex.select('tokenId').where({ usingUserId: users[0].payerId}).table('usingmuscletoken').first();
+        
+        const currentTokenTime = await knex.select('tokenExpiresAt').where({ tokenId: payerToken.tokenId }).table('muscletokens').first()
+
+        if (new Date(currentTokenTime.tokenExpiresAt).getTime() > Date.now()) {
+            await knex.update({ tokenExpiresAt: new Date(+(currentTokenTime.tokenExpiresAt.getTime() + 2592000000)) }).where({ tokenId: payerToken.tokenId }).table('muscletokens')
+            
+        } else {
+            await knex.update({ tokenExpiresAt: new Date(Date.now() + 2592000000) }).where({ tokenId: payerToken.tokenId }).table('muscletokens')
+            
+        }
+        await knex.update({ credits: `${parseFloat(parseFloat(userCredits[0].credits) + returnInitialCapital(parseFloat(req.body.pix[0].valor)))}` }).where({ userId: users[0].userId }).table('userinfo');
+
+        res.send('200')
+    } catch (error) {
+        res.send('502')
+    }
+})
+
+
+
+app.listen(3000, ()=>{
     console.log('running')
 })
 
