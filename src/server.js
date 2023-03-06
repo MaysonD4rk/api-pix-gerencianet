@@ -791,33 +791,32 @@ app.post('/webhook(/pix)?', async (req, res) => {
 
 app.post('/webhookPaybilling(/pix)?', async (req, res)=>{
     console.log(req.body)
+    
+    res.send('200')
 
-
-    try {
+    // try {
 
         
-        await knex.update({ chargeStatus: 'pago' }).where({ chargeId: req.body.pix[0].txid }).table('customerBilling');
-        const users = await knex.select(['userId', 'payerId']).where({ chargeId: req.body.pix[0].txid }).table('customerBilling')
-        const userCredits = await knex.select('credits').where({ userId: users[0].userId }).table('userinfo');
-        parseFloat(userCredits[0].credits)
+    //     await knex.update({ chargeStatus: 'pago' }).where({ chargeId: req.body.pix[0].txid }).table('customerBilling');
+    //     const users = await knex.select(['userId', 'payerId']).where({ chargeId: req.body.pix[0].txid }).table('customerBilling')
+    //     const userCredits = await knex.select('credits').where({ userId: users[0].userId }).table('userinfo');
+    //     parseFloat(userCredits[0].credits)
 
-        const payerToken = await knex.select('tokenId').where({ usingUserId: users[0].payerId}).table('usingmuscletoken').first();
+    //     const payerToken = await knex.select('tokenId').where({ usingUserId: users[0].payerId}).table('usingmuscletoken').first();
         
-        const currentTokenTime = await knex.select('tokenExpiresAt').where({ tokenId: payerToken.tokenId }).table('muscletokens').first()
+    //     const currentTokenTime = await knex.select('tokenExpiresAt').where({ tokenId: payerToken.tokenId }).table('muscletokens').first()
 
-        if (new Date(currentTokenTime.tokenExpiresAt).getTime() > Date.now()) {
-            await knex.update({ tokenExpiresAt: new Date(+(currentTokenTime.tokenExpiresAt.getTime() + 2592000000)) }).where({ tokenId: payerToken.tokenId }).table('muscletokens')
+    //     if (new Date(currentTokenTime.tokenExpiresAt).getTime() > Date.now()) {
+    //         await knex.update({ tokenExpiresAt: new Date(+(currentTokenTime.tokenExpiresAt.getTime() + 2592000000)) }).where({ tokenId: payerToken.tokenId }).table('muscletokens')
             
-        } else {
-            await knex.update({ tokenExpiresAt: new Date(Date.now() + 2592000000) }).where({ tokenId: payerToken.tokenId }).table('muscletokens')
+    //     } else {
+    //         await knex.update({ tokenExpiresAt: new Date(Date.now() + 2592000000) }).where({ tokenId: payerToken.tokenId }).table('muscletokens')
             
-        }
-        await knex.update({ credits: `${parseFloat(parseFloat(userCredits[0].credits) + returnInitialCapital(parseFloat(req.body.pix[0].valor)))}` }).where({ userId: users[0].userId }).table('userinfo');
+    //     }
+    //     await knex.update({ credits: `${parseFloat(parseFloat(userCredits[0].credits) + returnInitialCapital(parseFloat(req.body.pix[0].valor)))}` }).where({ userId: users[0].userId }).table('userinfo');
 
-        res.send('200')
-    } catch (error) {
-        res.send('502')
-    }
+    // } catch (error) {
+    //}
 })
 
 
