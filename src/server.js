@@ -487,7 +487,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                         valor: {
                             original: `${valueToPay}`
                         },
-                        chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+                        chave: "7d343162-7e96-499d-b648-fda9b60bb1fe",
                         solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
                         webhookUrl: "https://pix.mswareg.com/webhookPaybilling"
                     }
@@ -559,7 +559,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                                     valor: {
                                         original: `${valueToPay}`
                                     },
-                                    chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+                                    chave: "7d343162-7e96-499d-b648-fda9b60bb1fe",
                                     solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
                                     webhookUrl: "https://pix.mswareg.com/webhookPaybilling"
                                 }
@@ -628,7 +628,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                                     valor: {
                                         original: `${valueToPay}`
                                     },
-                                    chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+                                    chave: "7d343162-7e96-499d-b648-fda9b60bb1fe",
                                     solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
                                     webhookUrl: "https://pix.mswareg.com/webhookPaybilling"
                                 }
@@ -694,7 +694,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                                         valor: {
                                             original: `${valueToPay}`
                                         },
-                                        chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
+                                        chave: "7d343162-7e96-499d-b648-fda9b60bb1fe",
                                         solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
                                         webhookUrl: "https://pix.mswareg.com/webhookPaybilling"
                                     }
