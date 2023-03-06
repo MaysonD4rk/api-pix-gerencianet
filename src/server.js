@@ -39,9 +39,13 @@ function returnInitialCapital(value){
 
 //conectar ao banco de dados, linkar a cobrança a ele
 app.get('/', (req, res)=>{
-    res.redirect('https://mswareg.mswareg.com/home')
+    res.redirect('https://mswareg.com/home')
 })
-
+app.get('/teste', (req, res)=>{
+    console.log('entrou aqui');
+    res.status(200)
+    res.json({msg: 'entrou aqui'});
+})
 app.get('/charge/:userId', async (req, res)=>{
     let valueToPay = req.query.value;
     
