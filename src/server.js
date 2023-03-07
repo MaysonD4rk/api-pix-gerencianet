@@ -465,7 +465,6 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
     try {
         const users = await knex.select('*').where({ id: req.params.payerId }).table('users');
 
-
         console.log(users)
 
         if (users.length < 1) {
@@ -474,7 +473,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
 
             try {
                 const chargeDatas = await knex.select('*').where({ payerId: req.params.payerId, chargeValue: valueToPay }).table("customerBilling")
-
+                    console.log(chargeDatas)
                 if (chargeDatas.length < 1) {
                     const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
 
