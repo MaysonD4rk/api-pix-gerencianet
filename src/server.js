@@ -32,8 +32,7 @@ setInterval(() => {
 //3600000
 
 function returnInitialCapital(value){
-    var mult = ((value*100)/102.5+0.001)>=1?0.001:0.01
-    return Math.floor((value*100)/102.5+mult)
+    return (Math.floor((value*100)/102.5)).toFixed(2)
 }
 
 
