@@ -473,7 +473,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
 
             try {
                 const chargeDatas = await knex.select('*').where({ payerId: req.params.payerId, chargeValue: valueToPay }).table("customerBilling")
-                    console.log(chargeDatas)
+                    
                 if (chargeDatas.length < 1) {
                     const endpoint = `${process.env.GN_ENDPOINT}/v2/cob`;
 
@@ -731,14 +731,14 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                                     try {
                                         const insertCharge = await knex.insert({ userId: req.params.userId,payerId: req.params.payerId, chargeId: cobResponse.data.txid, chargeValue: cobResponse.data.valor.original, chargeStatus: cobResponse.data.status, chargeJson: saveDb }).table("customerBilling")
                                         console.log(insertCharge)
+                                        res.status(200)
+                                        res.json({
+                                            imagem: qrcodeResponse.data.imagemQrcode,
+                                            qrCodeTxt: qrcodeResponse.data.qrcode
+                                        })
                                     } catch (error) {
                                         console.log(error)
                                     }
-                                    res.status(200)
-                                    res.json({
-                                        imagem: qrcodeResponse.data.imagemQrcode,
-                                        qrCodeTxt: qrcodeResponse.data.qrcode
-                                    })
 
                                 } catch (error) {
                                     console.log(error)
