@@ -41,11 +41,8 @@ function returnInitialCapital(value){
 app.get('/', (req, res)=>{
     res.redirect('https://mswareg.com/home')
 })
-app.get('/teste', (req, res)=>{
-    console.log('entrou aqui');
-    res.status(200)
-    res.json({msg: 'entrou aqui'});
-})
+
+
 app.get('/charge/:userId', async (req, res)=>{
     let valueToPay = req.query.value;
     
@@ -491,7 +488,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                         valor: {
                             original: `${valueToPay}`
                         },
-                        chave: "7d343162-7e96-499d-b648-fda9b60bb1fe",
+                        chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
                         solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
                         
                     }
@@ -562,7 +559,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                                     valor: {
                                         original: `${valueToPay}`
                                     },
-                                    chave: "7d343162-7e96-499d-b648-fda9b60bb1fe",
+                                    chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
                                     solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
                                     
                                 }
@@ -630,7 +627,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                                     valor: {
                                         original: `${valueToPay}`
                                     },
-                                    chave: "7d343162-7e96-499d-b648-fda9b60bb1fe",
+                                    chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
                                     solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
                                     
                                 }
@@ -695,7 +692,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                                         valor: {
                                             original: `${valueToPay}`
                                         },
-                                        chave: "7d343162-7e96-499d-b648-fda9b60bb1fe",
+                                        chave: "db61e025-43f2-4b7d-82b6-58b4ee67959f",
                                         solicitacaoPagador: "Se possível, informe seu nickname para caso haja um improvável problema, devolver o seu dinheiro.",
                                         
                                     }
