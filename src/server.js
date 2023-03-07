@@ -598,18 +598,19 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                                 try {
                                     const insertCharge = await knex.insert({ userId: req.params.userId,payerId: req.params.payerId, chargeId: cobResponse.data.txid, chargeValue: cobResponse.data.valor.original, chargeStatus: cobResponse.data.status, chargeJson: saveDb }).table("customerBilling")
                                     console.log(insertCharge)
+                                    res.json({
+                                        imagem: qrcodeResponse.data.imagemQrcode,
+                                        qrCodeTxt: qrcodeResponse.data.qrcode
+                                    })
+                                    res.status(200)
+                                    return
                                 } catch (error) {
                                     console.log(error)
                                 }
 
-                                res.json({
-                                    imagem: qrcodeResponse.data.imagemQrcode,
-                                    qrCodeTxt: qrcodeResponse.data.qrcode
-                                })
                             } catch (error) {
                                 console.log(error)
                             }
-                            res.status(200)
 
                             break;
                         } else {
@@ -666,14 +667,15 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                                 try {
                                     const insertCharge = await knex.insert({ userId: req.params.userId, payerId: req.params.payerId, chargeId: cobResponse.data.txid, chargeValue: cobResponse.data.valor.original, chargeStatus: cobResponse.data.status, chargeJson: saveDb }).table("customerBilling")
                                     console.log(insertCharge)
+                                    res.status(200)
+                                    res.json({
+                                        imagem: qrcodeResponse.data.imagemQrcode,
+                                        qrCodeTxt: qrcodeResponse.data.qrcode
+                                    })
+                                    return
                                 } catch (error) {
                                     console.log(error)
                                 }
-                                res.status(200)
-                                res.json({
-                                    imagem: qrcodeResponse.data.imagemQrcode,
-                                    qrCodeTxt: qrcodeResponse.data.qrcode
-                                })
                             } else {
                                 try {
                                     var deleteCob = await knex.delete().where({ chargeId: chargeDatas[i].chargeId }).table('charge')
@@ -736,14 +738,16 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
                                             imagem: qrcodeResponse.data.imagemQrcode,
                                             qrCodeTxt: qrcodeResponse.data.qrcode
                                         })
+                                        return
                                     } catch (error) {
                                         console.log(error)
                                     }
 
                                 } catch (error) {
+                                    
                                     console.log(error)
                                     res.send('deu erro');
-
+                                    return
                                 }
                             }
                         }
