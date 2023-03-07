@@ -770,6 +770,7 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
 
 app.post('/webhook(/pix)?', async (req, res) => {
 
+    console.log('entrou aqui')
     console.log(req.body)
 
     const whereIsTheCharge = await knex.select('*').where({chargeId: req.body.pix[0].txid}).table('charge');
