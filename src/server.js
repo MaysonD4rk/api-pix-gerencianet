@@ -802,8 +802,12 @@ app.post('/webhook(/pix)?', async (req, res) => {
             console.log('uia, passou aqui 1')
 
             const payerToken = await knex.select('tokenId').where({ usingUserId: users[0].payerId }).table('usingmuscletoken').first();
+            console.log('payerToken')
 
+            console.log(payerToken)
             const currentTokenTime = await knex.select('tokenExpiresAt').where({ tokenId: payerToken.tokenId }).table('muscletokens').first()
+            console.log('current time console')    
+            console.log(currentTokenTime)
 
             if (new Date(currentTokenTime.tokenExpiresAt).getTime() > Date.now()) {
                 await knex.update({ tokenExpiresAt: new Date(+(currentTokenTime.tokenExpiresAt.getTime() + 2592000000)) }).where({ tokenId: payerToken.tokenId }).table('muscletokens')
