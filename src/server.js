@@ -41,8 +41,11 @@ function returnInitialCapital(value){
 app.get('/', (req, res)=>{
     res.redirect('https://mswareg.com/home')
 })
-
-
+app.get('/teste', (req, res)=>{
+    console.log('entrou aqui');
+    res.status(200)
+    res.json({msg: 'entrou aqui'});
+})
 app.get('/charge/:userId', async (req, res)=>{
     let valueToPay = req.query.value;
     
@@ -767,7 +770,6 @@ app.get('/payBilling/:userId/:payerId', async (req, res) => {
 
 app.post('/webhook(/pix)?', async (req, res) => {
 
-    console.log('entrou aqui')
     console.log(req.body)
 
     const whereIsTheCharge = await knex.select('*').where({chargeId: req.body.pix[0].txid}).table('charge');
